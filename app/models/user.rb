@@ -8,7 +8,7 @@
 #  encrypted_password     :string           default(""), not null
 #  likes_count            :integer          default(0)
 #  photos_count           :integer          default(0)
-#  private                :boolean
+#  private                :boolean          default(TRUE)
 #  remember_created_at    :datetime
 #  reset_password_sent_at :datetime
 #  reset_password_token   :string
@@ -28,9 +28,24 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
-  has_many :own_photos, class_name: "Photo", foreign_key: "owner_id"
-  has_many :comments, foreign_key: "author_id"
-  has_many :sent_follow_requests, class_name: "FollowRequest", foreign_key: "sender_id"
-  has_many :recieved_follow_requests, class_name: "FollowRequest", foreign_key: "recipient_id"
+  has_many :own_photos, class_name: "Photo", foreign_key: :owner_id
+  has_many :comments, foreign_key: :author_id
+
+  has_many :sent_follow_requests, class_name: "FollowRequest", foreign_key: :sender_id
+  has_many :accepted_sent_follow_requests, -> { accepted }, class_name: "FollowRequest", foreign_key: :sender_id
+
+  has_many :recieved_follow_requests, class_name: "FollowRequest", foreign_key: :recipient_id
+  has_many :accepted_recieved_follow_requests, -> { accepted }, class_name: "FollowRequest", foreign_key: :recipient_id
+
+  has_many :likes, foreign_key: :fan_id
+  has_many :liked_photos, through: :likes, source: :photo
+
+  has_many :leaders, through: :accepted_sent_follow_requests, source: :recipient
+  has_many :followers, through: :accepted_recieved_follow_requests, source: :sender
+  has_many :feed, through: :leaders, source: :own_photos
+  has_many :discover, through: :leaders, source: :liked_photos
+
+  validates :username, presence: true, uniqueness: true
+
 
 end
