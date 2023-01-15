@@ -30,8 +30,11 @@
 </div>
 
 
-<%= current_user.feed.count %>
 
-<% current_user.feed.each do |photo| %>
-  <%= render "photos/photo", photo: photo%>
-<% end %>
+<%= current_user.leaders.count %>
+
+<div class="list-group">
+  <% current_user.leaders.each do |leader| %>
+    <%= link_to leader.username, user_path(leader.username), class: "list-group-item list-group-item-action" %>
+  <% end %>
+</div>
